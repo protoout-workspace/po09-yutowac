@@ -9,12 +9,12 @@ const express = require('express');
 
 // 設定
 const config = {
-  channelSecret: process.env.CHANNEL_SECRET || 'd0944d6d1d0c2d04bb758acd0bc90f56',
-  channelAccessToken: process.env.CHANNEL_ACCESS_TOKEN || 'khIsBoKTlOj105cc0ZyPFQQtaVz0rJ15US7u+xGOQWsF+TKO0dzdsg3lVKAB3IHLS/A1kDkUfHAjcMQiP74WGbYu0n0orkFcPPjxNH0qHagbQ1Qxt0CQ2T6YDRqp3O7BboYgtwdw8WlrZ8ttAXa7LgdB04t89/1O/w1cDnyilFU=',
+  channelSecret: process.env.CHANNEL_SECRET || 'CHANNEL_SECRET',
+  channelAccessToken: process.env.CHANNEL_ACCESS_TOKEN || 'CHANNEL_ACCESS_TOKEN',
 };
 
 // GPTのAPIKEY
-const apiKey = process.env.OPENAI_API_KEY || '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';
+const apiKey = process.env.OPENAI_API_KEY || 'OPENAI_API_KEY';
 const openai = new OpenAI({apiKey});
 
 const makeCompletion = async (userMessage) => {
@@ -26,30 +26,17 @@ const makeCompletion = async (userMessage) => {
                 ## 海馬社長らしく少し馬鹿にするような雰囲気でビジネス用語を詳しく解説してください。
                 ## あなたの一人称は「俺様」で、「私」や「僕」や「拙者」とは言いません。
                 ## あなたが相手を指すときは「貴様」で、「あなた」や「君」とは言いません。
-                ## 応答の冒頭は高確率で「ふん...」と言ってください。
-                ## 「ダイヤモンド・ドラゴン」という言葉があったら「ほう…ダイヤモンド・ドラゴン......よくこの程度のカードで虚勢が張れたものだ...(こんなカード オレは三十六枚持っているよ...)」と返答してください。
-                ## 「エネミーコントローラー」という言葉があったら「マジックカード エネミー・コントローラー発動！ ライフ1000ポイント払い 左・右・A・B ！！」と返答してください。
-                ## 「ブルーアイズ」という言葉があったら「出でよ ブルーアイズ・ホワイト・ドラゴン！」と返答してください。`
+                ## 応答の冒頭は高確率で「ふん...」と言ってください。`
   };
 
   const sendMessage = [prompt, userMessage];
   console.log(sendMessage);
-  if (userMessage=='粉砕'||userMessage=='玉砕'||userMessage=='大喝采'||userMessage=='強靭'||userMessage=='無敵'||userMessage=='最強') {
-    const generated = await openai.images.generate({
-      model: "dall-e-3",
-      prompt: userMessage.content,
-      size: "1024x1024",
-      quality: "standard",
-      n: 1,
-    });
-    return generated
-  }else{
-    const generated = await openai.chat.completions.create({
-      messages: sendMessage,
+
+  const generated = await openai.chat.completions.create({
+  messages: sendMessage,
       model: "gpt-3.5-turbo-1106",
-    });
-    return generated
-  };
+  });
+  return generated
 };
 
 const client = new line.messagingApi.MessagingApiClient(config);
@@ -68,10 +55,7 @@ async function handleEvent(event) {
   // ChatGPT APIにリクエストを送る
   try {
     const completion = await makeCompletion(userMessage);
-    if (userMessage.choices) {
     // レスポンスから返答を取得
-      console.log(completion);
-      console.log(completion.choices[0].message.content); // レスポンスをみたいときにコメントアウトを外してください
       const reply = completion.choices[0].message.content;
       // 返答をLINEに送る
       return client.replyMessage({
@@ -80,21 +64,7 @@ async function handleEvent(event) {
           type: 'text',
           text: reply
         }]
-      })
-    } else {
-      const url = completion.data[0].url;
-      const reply = await fetch(url);
-      
-      // 返答をLINEに送る
-      return client.replyMessage(
-        event.replyToken, 
-        {
-          type: 'image',
-          originalContentUrl: url,
-          previewImageUrl: url
-        }
-      );
-    }
+      });
   } catch (error) {
     // エラーが発生した場合はログに出力
     console.error(error);
