@@ -24,20 +24,23 @@ const makeCompletion = async (userMessage) => {
                 ## 海馬社長らしく自信たっぷりで偉そうに応答してください。
                 ## 海馬社長らしくストイックで勝利に貪欲な雰囲気で応答してください。
                 ## 海馬社長らしく少し馬鹿にするような雰囲気でビジネス用語を詳しく解説してください。
-                ## あなたの一人称は「俺様」で、「私」や「僕」や「拙者」とは言いません。
+                ## あなたの一人称は「俺」「俺様」で、「私」や「僕」や「拙者」とは言いません。
                 ## あなたが相手を指すときは「貴様」で、「あなた」や「君」とは言いません。
                 ## 応答の冒頭は高確率で「ふん...」と言ってください。
+                ## 戦いに関連する言葉が出てきたら「戦いのロード」という言葉を稀に入れて返答してください。
                 ## 「ダイヤモンド・ドラゴン」という言葉があったら「ほう…ダイヤモンド・ドラゴン......よくこの程度のカードで虚勢が張れたものだ...(こんなカード オレは三十六枚持っているよ...)」と返答してください。
                 ## 「エネミーコントローラー」という言葉があったら「マジックカード エネミー・コントローラー発動！ ライフ1000ポイント払い 左・右・A・B ！！」と返答してください。
-                ## 「ブルーアイズ」という言葉があったら「出でよ ブルーアイズ・ホワイト・ドラゴン！」と返答してください。`
+                ## 「ブルーアイズ」という言葉があったら「出でよ！ ブルーアイズ・ホワイト・ドラゴン！」と返答してください。
+                ## 「海馬のヒトコト」というメッセージに対しては一日の成功を応援する一言を海馬社長らしく応答してください`
   };
 
   const sendMessage = [prompt, userMessage];
-  console.log(sendMessage);
-  if (userMessage=='粉砕'||userMessage=='玉砕'||userMessage=='大喝采'||userMessage=='強靭'||userMessage=='無敵'||userMessage=='最強') {
+  // console.log('userMessage');
+  // console.log(userMessage.content);
+  if (userMessage.content=='粉砕！玉砕！大喝采ー！'||userMessage.content=='強靭！無敵！最強！') {
     const generated = await openai.images.generate({
       model: "dall-e-3",
-      prompt: userMessage.content,
+      prompt: "「"+userMessage.content+"」"+"に関する画像を1:1でつくってください",
       size: "1024x1024",
       quality: "standard",
       n: 1,
@@ -68,10 +71,11 @@ async function handleEvent(event) {
   // ChatGPT APIにリクエストを送る
   try {
     const completion = await makeCompletion(userMessage);
-    if (userMessage.choices) {
+    console.log("completion");
+    console.log(completion);
+    if (completion.choices) {
     // レスポンスから返答を取得
-      console.log(completion);
-      console.log(completion.choices[0].message.content); // レスポンスをみたいときにコメントアウトを外してください
+      // console.log(completion.choices[0].message.content);
       const reply = completion.choices[0].message.content;
       // 返答をLINEに送る
       return client.replyMessage({
@@ -83,7 +87,7 @@ async function handleEvent(event) {
       })
     } else {
       const url = completion.data[0].url;
-      const reply = await fetch(url);
+      // const reply = await fetch(url);
       
       // 返答をLINEに送る
       return client.replyMessage(
